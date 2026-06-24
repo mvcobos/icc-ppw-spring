@@ -14,7 +14,7 @@ java -version
 ```
 
 **Evidencia:**
-![Verificación de Java](images/practica1/javaVerison.png.png)
+![Verificación de Java](images/practica1/javaVerison.png)
 
 ---
 

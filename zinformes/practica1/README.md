@@ -113,6 +113,4 @@ Sin Spring Boot, tendría que: instalar Tomcat, configurarlo manualmente, desple
 - Puerto del servidor: **8080**
 
 ---
-
-**Entregado por:** [Tu nombre]  
-**Fecha de entrega:** [Fecha]  
+s

@@ -1,7 +1,6 @@
 package ec.edu.ups.icc.fundamentos01.products.services;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -10,7 +9,6 @@ import ec.edu.ups.icc.fundamentos01.products.dtos.PartialUpdateProductDto;
 import ec.edu.ups.icc.fundamentos01.products.dtos.UpdateProductDto;
 import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
-import ec.edu.ups.icc.fundamentos01.products.mappers.ProductMapper;
 import ec.edu.ups.icc.fundamentos01.products.models.ProductModel;
 import ec.edu.ups.icc.fundamentos01.products.repositories.ProductRepository;
 
@@ -18,70 +16,93 @@ import ec.edu.ups.icc.fundamentos01.products.repositories.ProductRepository;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
-    private final ProductMapper mapper;
 
-    public ProductServiceImpl(ProductRepository repository, ProductMapper mapper) {
+    public ProductServiceImpl(ProductRepository repository) {
         this.repository = repository;
-        this.mapper = mapper;
     }
 
+    // Retorna todos los productos no eliminados.
+    // Convierte las entidades a DTOs de respuesta.
     @Override
     public List<ProductResponseDto> findAll() {
         return repository.findAll().stream()
-                .map(mapper::toModel)
-                .map(mapper::toResponseDto)
-                .collect(Collectors.toList());
+                .filter(entity -> !entity.isDeleted())
+                .map(ProductModel::fromEntity)
+                .map(ProductModel::toResponseDto)
+                .toList();
     }
 
+    // Busca un producto por su id.
+    // Lanza una excepción si no se encuentra.
     @Override
     public Object findOne(Long id) {
         ProductEntity entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        ProductModel model = mapper.toModel(entity);
-        return mapper.toResponseDto(model);
+                .orElseThrow(() -> new IllegalStateException("Product not found"));
+        return ProductModel.fromEntity(entity).toResponseDto();
     }
 
+    // Crea un nuevo producto a partir de un DTO.
+    // Guarda la entidad y devuelve el DTO de respuesta.
     @Override
     public ProductResponseDto create(CreateProductDto dto) {
-        ProductModel model = mapper.toModel(dto);
-        ProductEntity entity = mapper.toEntity(model);
+        ProductModel model = ProductModel.fromDto(dto);
+        ProductEntity entity = model.toEntity();
         ProductEntity savedEntity = repository.save(entity);
-        return mapper.toResponseDto(mapper.toModel(savedEntity));
+        return ProductModel.fromEntity(savedEntity).toResponseDto();
     }
 
+    // Actualiza completamente un producto existente.
+    // Lanza una excepción si el producto está eliminado o no se encuentra.
     @Override
     public Object update(Long id, UpdateProductDto dto) {
         ProductEntity existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-        existing.setPrice(dto.getPrice());
-        existing.setStock(dto.getStock());
+                .orElseThrow(() -> new IllegalStateException("Product not found"));
+                
+        if (existing.isDeleted()) {
+            throw new IllegalStateException("Cannot update a deleted product");
+        }
 
-        ProductEntity saved = repository.save(existing);
-        return mapper.toResponseDto(mapper.toModel(saved));
+        ProductModel model = ProductModel.fromEntity(existing);
+        model.update(dto);
+        
+        ProductEntity updated = model.toEntity();
+        updated.setId(id);
+        ProductEntity saved = repository.save(updated);
+        return ProductModel.fromEntity(saved).toResponseDto();
     }
 
+    // Actualiza parcialmente un producto existente.
+    // Lanza una excepción si el producto está eliminado o no se encuentra.
     @Override
     public Object partialUpdate(Long id, PartialUpdateProductDto dto) {
         ProductEntity existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new IllegalStateException("Product not found"));
 
-        if (dto.getName() != null) existing.setName(dto.getName());
-        if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
-        if (dto.getPrice() != null) existing.setPrice(dto.getPrice());
-        if (dto.getStock() != null) existing.setStock(dto.getStock());
+        if (existing.isDeleted()) {
+            throw new IllegalStateException("Cannot update a deleted product");
+        }
 
-        ProductEntity saved = repository.save(existing);
-        return mapper.toResponseDto(mapper.toModel(saved));
+        ProductModel model = ProductModel.fromEntity(existing);
+        model.partialUpdate(dto);
+        
+        ProductEntity updated = model.toEntity();
+        updated.setId(id);
+        ProductEntity saved = repository.save(updated);
+        return ProductModel.fromEntity(saved).toResponseDto();
     }
 
+    // Elimina lógicamente un producto por su id.
+    // Lanza una excepción si el producto ya está eliminado o no se encuentra.
     @Override
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado");
+        ProductEntity existing = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Product not found"));
+
+        if (existing.isDeleted()) {
+            throw new IllegalStateException("Product is already deleted");
         }
-        repository.deleteById(id);
+
+        existing.setDeleted(true);
+        repository.save(existing);
     }
 }

@@ -216,13 +216,20 @@ El flujo de datos funciona así: cuando se crea un producto desde la API (POST),
 Lo importante de BaseEntity es que centraliza los campos comunes (id, createdAt, updatedAt, deleted) en una sola clase. Todas las entidades heredan de BaseEntity, así que no tengo que repetir esos campos en cada una. El `@PrePersist` asigna automáticamente la fecha de creación cuando se guarda por primera vez, y `@PreUpdate` actualiza la fecha de modificación cada vez que se edita. Esto permite rastrear cuándo se creó y cuándo se modificó cada registro.
 
 ---
+# Práctica 6 (Spring Boot): Validación de DTOs y Control de Datos de Entrada
 
-## Notas Extra
+## 1. Error al crear producto con precio negativo
+![Error al crear producto con precio negativo](images/practica6/01-error-producto-negativo.png)
 
-- Versión de Java utilizada: **21**
-- Versión de Spring Boot: **4.1.0**
-- Build Tool: **Gradle**
-- Servidor embebido: **Tomcat 11.0.x**
-- Puerto del servidor: **8080**
+## 2. Error al actualizar producto eliminado
+![Error al actualizar producto eliminado](images/practica6/02-error-actualizar-eliminad.png)
 
----
+## 3. findAll no devuelve productos eliminados
+- Listado de productos antes de eliminar
+![Lista de productos](images/practica6/03-lista-productos.png)
+
+- Producto id 2 eliminado
+- Lista de productos con findAll:
+![findAll no devuelve productos eliminados](images/practica6/04-findAll.png)
+
+

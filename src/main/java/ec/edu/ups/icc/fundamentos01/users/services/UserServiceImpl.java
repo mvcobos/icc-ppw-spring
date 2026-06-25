@@ -54,14 +54,15 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto create(CreateUserDto dto) {
+        // Validar que el email no esté registrado
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
+        
         UserModel model = UserMapper.toModelFormDTO(dto);
-
         UserEntity entity = UserMapper.toEntityFromModel(model);
-
         UserEntity savedEntity = userRepository.save(entity);
-
         UserModel savedModel = UserMapper.toModelFromEntity(savedEntity);
-
         return UserMapper.toResponse(savedModel);
     }
 
@@ -74,13 +75,17 @@ public class UserServiceImpl implements UserService {
         UserEntity entity = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
+        // Validar email duplicado (pero solo si cambió)
+        if (!entity.getEmail().equals(dto.getEmail()) && 
+            userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
+
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail());
 
         UserEntity savedEntity = userRepository.save(entity);
-
         UserModel model = UserMapper.toModelFromEntity(savedEntity);
-
         return UserMapper.toResponse(model);
     }
 
@@ -93,6 +98,13 @@ public class UserServiceImpl implements UserService {
         UserEntity entity = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
+        // Validar email duplicado solo si viene en el DTO y es diferente
+        if (dto.getEmail() != null && 
+            !entity.getEmail().equals(dto.getEmail()) && 
+            userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
+
         if (dto.getName() != null) {
             entity.setName(dto.getName());
         }
@@ -102,9 +114,7 @@ public class UserServiceImpl implements UserService {
         }
 
         UserEntity savedEntity = userRepository.save(entity);
-
         UserModel model = UserMapper.toModelFromEntity(savedEntity);
-
         return UserMapper.toResponse(model);
     }
 

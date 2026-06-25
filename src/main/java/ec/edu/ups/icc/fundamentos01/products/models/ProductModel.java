@@ -3,6 +3,12 @@ package ec.edu.ups.icc.fundamentos01.products.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import ec.edu.ups.icc.fundamentos01.products.dtos.CreateProductDto;
+import ec.edu.ups.icc.fundamentos01.products.dtos.PartialUpdateProductDto;
+import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
+import ec.edu.ups.icc.fundamentos01.products.dtos.UpdateProductDto;
+import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
+
 /**
  * Modelo de dominio del recurso products.
  * * Representa al producto dentro de la lógica de negocio.
@@ -10,39 +16,113 @@ import java.time.LocalDateTime;
  */
 public class ProductModel {
 
-    /**
-     * Identificador del producto.
-     */
     private Long id;
-    
     private String name;
     private String description;
     private BigDecimal price;
     private Integer stock;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private boolean deleted;
 
-    // Constructor vacío
     public ProductModel() {
     }
 
-    // Constructor lleno para transformaciones básicas
-    public ProductModel(String name, String description, BigDecimal price, Integer stock) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-    }
+    // 12.2 Metodos. Productos ya no usara el mapper, 
+    // sino que el dominio sabrá cómo construirse y convertirse a entidad.
 
-    // Constructor completo
-    public ProductModel(Long id, String name, String description, BigDecimal price, Integer stock, LocalDateTime createdAt) {
+    public ProductModel(Long id, String name, String description, BigDecimal price, Integer stock,
+            LocalDateTime createdAt, LocalDateTime updatedAt, boolean deleted) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.stock = stock;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.deleted = deleted;
     }
 
+    //Crea un ProductModel a partir de un DTO de creación. Es lo que se usa cuando llega un POST. 
+    // Recibe los datos del cliente y los pone dentro de un ProductModel.
+    public static ProductModel fromDto(CreateProductDto dto) {
+        ProductModel product = new ProductModel();
+        product.name = dto.getName();
+        product.description = dto.getDescription();
+        product.price = dto.getPrice();
+        product.stock = dto.getStock();
+        product.deleted = false;
+        return product;
+    }
+
+    /*Crea un ProductModel a partir de una ProductEntity (lo que viene de la base de datos). 
+    Cuando se consulta la BD, te devuelve entidades, y este método las convierte a el modelo de dominio. */
+    public static ProductModel fromEntity(ProductEntity entity) {
+        ProductModel product = new ProductModel();
+        product.id = entity.getId();
+        product.name = entity.getName();
+        product.description = entity.getDescription();
+        product.price = entity.getPrice();
+        product.stock = entity.getStock();
+        product.createdAt = entity.getCreatedAt();
+        product.updatedAt = entity.getUpdatedAt();
+        product.deleted = entity.isDeleted();
+        return product;
+    }
+
+    /* Convierte el ProductModel actual en una ProductEntity para guardarlo en la base de datos. 
+    Es lo opuesto de fromEntity.*/
+    public ProductEntity toEntity() {
+        ProductEntity entity = new ProductEntity();
+        if (this.id != null) {
+            entity.setId(this.id);
+        }
+        entity.setName(this.name);
+        entity.setDescription(this.description);
+        entity.setPrice(this.price);
+        entity.setStock(this.stock);
+        entity.setDeleted(this.deleted);
+        return entity;
+    }
+
+    /*Convierte el ProductModel actual en un DTO de respuesta para devolver al cliente. 
+    Solo expone los campos seguros (no expone, por ejemplo, el campo deleted). */
+    public ProductResponseDto toResponseDto() {
+        ProductResponseDto dto = new ProductResponseDto();
+        dto.setId(this.id);
+        dto.setName(this.name);
+        dto.setDescription(this.description);
+        dto.setPrice(this.price);
+        dto.setStock(this.stock);
+        return dto;
+    }
+
+    /*Actualiza todos los campos editables del ProductModel actual. 
+    Se usa para PUT (actualización completa). */
+    public void update(UpdateProductDto dto) {
+        this.name = dto.getName();
+        this.description = dto.getDescription();
+        this.price = dto.getPrice();
+        this.stock = dto.getStock();
+    }
+
+    /*Actualiza solo los campos que no son null del ProductModel actual. 
+    Se usa para PATCH (actualización parcial). */
+    public void partialUpdate(PartialUpdateProductDto dto) {
+        if (dto.getName() != null) {
+            this.name = dto.getName();
+        }
+        if (dto.getDescription() != null) {
+            this.description = dto.getDescription();
+        }
+        if (dto.getPrice() != null) {
+            this.price = dto.getPrice();
+        }
+        if (dto.getStock() != null) {
+            this.stock = dto.getStock();
+        }
+    }
+    
     // Getters y Setters
     public Long getId() { 
         return id; 

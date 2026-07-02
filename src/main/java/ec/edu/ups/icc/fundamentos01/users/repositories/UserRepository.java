@@ -10,9 +10,16 @@ import ec.edu.ups.icc.fundamentos01.users.entities.UserEntity;
 /*
  * Repositorio encargado de gestionar la persistencia
  * de usuarios usando Spring Data JPA.
+ * JpaRepository
  */
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
+    
+    Optional<UserEntity> findByIdAndIsDeletedFalse(Long id);
+
+    Optional<UserEntity> findByIdAndIsDeleted(Long id, boolean deleted);
+
+    Optional<UserEntity> findByNameAndId(String name, Long id);
 }

@@ -8,7 +8,8 @@ import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 
 public interface ProductService {
     List<ProductResponseDto> findAll();
-    Object findOne(Long id); 
+    Object findOne(Long id);
+    List<ProductResponseDto> findByCategory(Long categoryId);
     ProductResponseDto create(CreateProductDto dto);
     Object update(Long id, UpdateProductDto dto);
     Object partialUpdate(Long id, PartialUpdateProductDto dto);

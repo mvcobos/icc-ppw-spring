@@ -55,6 +55,15 @@ public class ProductsController {
     }
 
     /*
+     * Endpoint para listar los productos de una categoría.
+     * GET /products/category/{id}
+     */
+    @GetMapping("/category/{id}")
+    public List<ProductResponseDto> findByCategory(@PathVariable Long id) {
+        return service.findByCategory(id);
+    }
+
+    /*
      * Endpoint para crear un nuevo producto.
      * POST /products
      * @Valid indica que se deben aplicar las validaciones definidas en el DTO.

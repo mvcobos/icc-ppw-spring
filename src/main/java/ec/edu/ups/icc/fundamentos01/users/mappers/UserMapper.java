@@ -29,7 +29,7 @@ public class UserMapper {
      * En este método también se asigna createdAt porque la fecha de creación
      * debe generarla el backend y no el cliente.
      */
-    public static UserModel toModelFormDTO(CreateUserDto dto) {
+    public static UserModel toModelFromDTO(CreateUserDto dto) {
         UserModel model = new UserModel();
 
         model.setName(dto.getName());

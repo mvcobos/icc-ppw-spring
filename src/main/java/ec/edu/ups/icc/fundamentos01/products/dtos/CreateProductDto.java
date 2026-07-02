@@ -14,46 +14,81 @@ import jakarta.validation.constraints.Size;
  */
 public class CreateProductDto {
 
-    /* Validaciones
-    String = @NotBlank y @Size
-    BigDecimal = @NotNull y @DecimalMin
-    Integer = @NotNull y @Min
-     */
-    
-    @NotBlank(message = "El nombre del producto es obligatorio")
-    @Size(min = 3, max = 150, message = "El nombre del producto debe tener entre 3 y 150 caracteres")
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 3, max = 150, message = "El nombre debe tener entre 3 y 150 caracteres")
     private String name;
 
-    private String description; // sin validación, puede ser opcional
-    
-    @NotNull(message = "El precio del producto es obligatorio")
-    @DecimalMin(value = "0", inclusive = true, message = "El precio debe ser mayor o igual a 0")
-    private BigDecimal price;
+    @NotNull(message = "El precio es obligatorio")
+    @DecimalMin(value = "0.0", inclusive = true, message = "El precio no puede ser negativo")
+    private Double price;
 
-    @NotNull(message = "El stock del producto es obligatorio")
-    @Min(value = 0, message = "El stock debe ser mayor o igual a 0")
+    @NotNull(message = "El stock es obligatorio")
+    @Min(value = 0, message = "El stock no puede ser negativo")
     private Integer stock;
 
+    @NotNull(message = "El ID del usuario es obligatorio")
+    private Long userId;
+
+    @NotNull(message = "El ID de la categoría es obligatorio")
+    private Long categoryId;
+
+    // Constructor vacío
     public CreateProductDto() {
     }
 
-    public CreateProductDto(String name, String description, BigDecimal price, Integer stock) {
+    // Constructor lleno
+    public CreateProductDto(
+            @NotBlank(message = "El nombre es obligatorio") @Size(min = 3, max = 150, message = "El nombre debe tener entre 3 y 150 caracteres") String name,
+            @NotNull(message = "El precio es obligatorio") @DecimalMin(value = "0.0", inclusive = true, message = "El precio no puede ser negativo") Double price,
+            @NotNull(message = "El stock es obligatorio") @Min(value = 0, message = "El stock no puede ser negativo") Integer stock,
+            @NotNull(message = "El ID del usuario es obligatorio") Long userId,
+            @NotNull(message = "El ID de la categoría es obligatorio") Long categoryId) {
         this.name = name;
-        this.description = description;
         this.price = price;
+        this.stock = stock;
+        this.userId = userId;
+        this.categoryId = categoryId;
+    }
+
+    // Getters y setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
         this.stock = stock;
     }
 
-    // Getters y Setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public Long getCategoryId() {
+        return categoryId;
+    }
 
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
 }

@@ -1,4 +1,4 @@
-# NOTAS EXTRA
+# NOTAS EXTRA http://localhost:8080/api/products
 
 ## PRACTICA 6: 
 **Validaciones:**  
@@ -14,6 +14,10 @@
 ### *PASO 12.2: Modelo de dominio Product*
 **¿Por qué ya no usamos Mapper?**  
 Antes el mapper hacía las conversiones. Ahora el modelo sabe convertirse a sí mismo. Esto se llama "domain-driven design" — el dominio tiene responsabilidad sobre sus propias transformaciones.
+
+---
+## Practica 7
+
 
 ---
 ### DATOS: 

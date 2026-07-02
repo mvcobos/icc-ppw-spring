@@ -1,5 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.products.repositories;
 
+import java.util.List;
+
 import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -7,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     // Hereda automáticamente todos los métodos CRUD (save, findById, findAll, deleteById)
+
+    List<ProductEntity> findByCategoryIdAndIsDeletedFalse(Long categoryId);
 }

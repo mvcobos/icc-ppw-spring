@@ -29,11 +29,12 @@ public abstract class BaseEntity {
 
     private LocalDateTime updatedAt;
 
-    private boolean deleted;
+    @jakarta.persistence.Column(nullable = false)
+    private boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {
-        this.deleted = false;
+        this.isDeleted = false;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -73,10 +74,10 @@ public abstract class BaseEntity {
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return isDeleted;
     }
 
     public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+        this.isDeleted = deleted;
     }
 }

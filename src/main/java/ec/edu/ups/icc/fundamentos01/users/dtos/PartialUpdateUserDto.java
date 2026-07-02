@@ -1,6 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.users.dtos;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /*
@@ -20,12 +21,16 @@ public class PartialUpdateUserDto {
     @Size(max = 150, message = "El email no debe superar los 150 caracteres")
     private String email;
 
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    private String password;
+
     public PartialUpdateUserDto() {
     }
 
-    public PartialUpdateUserDto(String name, String email) {
+    public PartialUpdateUserDto(String name, String email, String password) {
         this.name = name;
         this.email = email;
+        this.password = password;
     }
 
     public String getName() {
@@ -36,12 +41,20 @@ public class PartialUpdateUserDto {
         return email;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
     
 }

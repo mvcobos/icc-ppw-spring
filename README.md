@@ -1,27 +1,3 @@
-
-# EVIDENCIA DEMOSTRATIVA
-
-## 1 crear un producto nombre laptop
-![crear un producto nombre laptop](images/revision/01-crear-laptop.png)
-
-## 2 crear un producto nombre smartphone
-![crear un producto nombre smartphone](images/revision/02-crear-smarthphone.png)
-
-## 3 cambiar nombre del producto laptop a "notebook"
-El id del producto creado laptop es 10. Por eso se usa esa ruta para hacer el PUT
-![cambiar nombre del producto laptop a "notebook"](images/revision/03-cambiar-nombre.png)
-
-## 4 eliminar el producto smartphone
-![eliminar el producto smartphone](images/revision/04-aliminar-smarthphone.png)
-
-5 en DB select a productos, debere ver los
-2 productos
-- notebook con fecha de modificación actual
-- smartphone eliminado logico en true
-![DB select a productos](images/revision/05-select-productos.png)
-
----
-
 # Práctica 1: Spring Boot - Instalación, Configuración e Implementación del Primer Endpoint
 
 **Asignatura:** Programación y Plataformas Web  

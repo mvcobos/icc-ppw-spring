@@ -319,12 +319,11 @@ Petición `GET /api/products/page?page=-1&size=0`, respondiendo `400 Bad Request
 
 ## 4. Endpoint de categoría paginado con Page
 Petición `GET /api/categories/2/products/page?page=0&size=5`, evidenciando productos filtrados por categoría, paginación aplicada y metadatos de `Page`.
-> **Nota:** el ejemplo original usa `page=110`, pero con pocos productos de prueba esa página estará vacía (`content: []`); usa `page=0` para ver resultados.
 ![GET categoría products page](images/practica10/04-get-category-products-page.png)
 
 ## 5. Endpoint de categoría paginado con Slice
 Petición `GET /api/categories/2/products/slice?page=0&size=5`, evidenciando productos filtrados por categoría, paginación aplicada y metadatos de `Slice`.
-> **Nota:** igual que arriba, usa `page=0` en vez de `page=10` si tu categoría tiene pocos productos, para que la captura muestre contenido real.
+
 ![GET categoría products slice](images/practica10/05-get-category-products-slice.png)
 
 ## 6. Explicación breve

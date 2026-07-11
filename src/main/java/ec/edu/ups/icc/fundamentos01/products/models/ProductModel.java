@@ -1,6 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.products.models;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import ec.edu.ups.icc.fundamentos01.categories.dtos.CategoryResponseDto;
 import ec.edu.ups.icc.fundamentos01.products.dtos.CreateProductDto;
@@ -23,7 +24,7 @@ public class ProductModel {
     private Double price;
     private Integer stock;
     private UserResponseDto owner;
-    private CategoryResponseDto category;
+    private Set<CategoryResponseDto> categories;   
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;
@@ -33,17 +34,15 @@ public class ProductModel {
 
     // 12.2 Metodos. Productos ya no usara el mapper, 
     // sino que el dominio sabrá cómo construirse y convertirse a entidad.
-
-    public ProductModel(Long id, String name, String description, Double price, Integer stock,
-            UserResponseDto owner, CategoryResponseDto category,
-            LocalDateTime createdAt, LocalDateTime updatedAt, boolean deleted) {
+    public ProductModel(Long id, String name, String description, Double price, Integer stock, UserResponseDto owner,
+            Set<CategoryResponseDto> categories, LocalDateTime createdAt, LocalDateTime updatedAt, boolean deleted) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.stock = stock;
         this.owner = owner;
-        this.category = category;
+        this.categories = categories;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deleted = deleted;
@@ -76,11 +75,13 @@ public class ProductModel {
             entity.getOwner().getEmail(),
             entity.getOwner().getCreatedAt()
         );
-        product.category = new CategoryResponseDto(
-            entity.getCategory().getId(),
-            entity.getCategory().getName(),
-            entity.getCategory().getDescription()
-        );
+        product.categories = entity.getCategories().stream().map(
+            categoryEntity -> new CategoryResponseDto(
+                categoryEntity.getId(),
+                categoryEntity.getName(),
+                categoryEntity.getDescription()
+            )
+        ).collect(java.util.stream.Collectors.toSet());       
         product.createdAt = entity.getCreatedAt();
         product.updatedAt = entity.getUpdatedAt();
         product.deleted = entity.isDeleted();
@@ -112,7 +113,8 @@ public class ProductModel {
         dto.setPrice(this.price);
         dto.setStock(this.stock);
         dto.setOwner(this.owner);
-        dto.setCategory(this.category);
+        
+        dto.setCategories(this.categories);
         dto.setCreatedAt(this.createdAt);
         dto.setUpdatedAt(this.updatedAt);
         return dto;
@@ -193,12 +195,12 @@ public class ProductModel {
         this.owner = owner;
     }
 
-    public CategoryResponseDto getCategory() {
-        return category;
+    public Set<CategoryResponseDto> getCategories() {
+        return categories;
     }
 
-    public void setCategory(CategoryResponseDto category) {
-        this.category = category;
+    public void setCategories(Set<CategoryResponseDto> categories) {
+        this.categories = categories;
     }
 
     public LocalDateTime getCreatedAt() {

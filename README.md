@@ -232,4 +232,171 @@ Lo importante de BaseEntity es que centraliza los campos comunes (id, createdAt,
 - Lista de productos con findAll:
 ![findAll no devuelve productos eliminados](images/practica6/04-findAll.png)
 
+---
+# Práctica 7 (Spring Boot): Manejo Global de Errores y Excepciones
 
+## 1. Error por producto inexistente
+Petición `GET /api/products/999`, con un id que no existe.
+![GET producto inexistente - 404](images/practica7/01-get-producto-404.png)
+
+## 2. Error por validación de DTO
+Petición `POST /api/products` con datos inválidos:
+```json
+{
+  "name": "",
+  "price": -5,
+  "stock": -1
+}
+```
+Respuesta `400 Bad Request` con el campo `details` listando cada error de campo.
+![POST producto inválido - 400 con details](images/practica7/02-post-producto-400.png)
+
+---
+# Práctica 8 (Spring Boot): Relaciones ManyToOne, Foreign Keys y Consultas Relacionales
+
+## 1. Descripción de la tabla products en PostgreSQL
+Comando `\d products` en psql, mostrando la columna `user_id` como foreign key hacia `users`.
+![Descripción tabla products](images/practica8/01-describe-products.png)
+
+## 2. Creación de producto con relaciones
+Respuesta de `POST /api/products` mostrando el objeto anidado `owner` y las fechas `createdAt`/`updatedAt`.
+
+![POST producto con owner y categories](images/practica8/02-post-producto-relaciones.png)
+
+## 3. Consulta de productos por categoría
+Petición `GET /api/products/category/1`.
+![GET products por categoría](images/practica8/03-get-products-category.png)
+
+## 4. Explicación breve
+### ¿Cómo se relaciona ProductEntity con UserEntity y CategoryEntity usando @ManyToOne y @JoinColumn?
+`ProductEntity` tiene un campo `owner` anotado con `@ManyToOne` y `@JoinColumn(name = "user_id")`, que crea la foreign key `user_id` en la tabla `products` apuntando a `users`. Originalmente `categories` también era una relación `@ManyToOne` con `@JoinColumn`, pero en la Práctica 9 cambió a `@ManyToMany` con `@JoinTable("product_categories")`, porque un producto puede pertenecer a varias categorías.
+
+---
+# Práctica 9 (Spring Boot): Request Parameters, Consultas Relacionadas y Filtrado con JPA
+
+## 1. Producto creado con varias categorías
+Petición `POST /api/products`:
+```json
+{
+  "name": "Laptop Gaming",
+  "price": 1200.0,
+  "stock": 5,
+  "categoryIds": [1, 2, 3]
+}
+```
+
+![POST producto con varias categorías](images/practica9/01-post-producto-categorias.png)
+
+## 2. Consulta con filtros por usuario
+Petición `GET /api/users/1/products?name=laptop&minPrice=500`.
+![GET productos de usuario con filtros](images/practica9/02-get-user-products-filtros.png)
+
+## 3. Consulta con filtros por categoría
+Petición `GET /api/categories/2/products?userId=1`.
+![GET productos de categoría con filtros](images/practica9/03-get-category-products-filtros.png)
+
+## 4. Explicación breve
+### ¿Por qué se usa ProductService y ProductRepository para consultar productos aunque el endpoint esté dentro del contexto /users/{id}/products o /categories/{id}/products?
+Porque el recurso que se está consultando sigue siendo `products`, solo que filtrado por usuario o por categoría. La ruta pertenece semánticamente a `users` o `categories`, pero la lógica y el acceso a datos le corresponden a `ProductService`/`ProductRepository`, así se evita duplicar lógica de productos en otros módulos.
+
+### ¿Qué cambió al pasar de Product N ──── 1 Category a Product N ──── N Category?
+La relación pasó de `@ManyToOne` (una categoría por producto, columna `category_id` en `products`) a `@ManyToMany` (`@JoinTable product_categories`), con un `Set<CategoryEntity> categories` en vez de un solo campo. Esto permitió que un producto tenga varias categorías y que `CreateProductDto`/`UpdateProductDto` reciban `categoryIds` como una lista en vez de un solo `categoryId`.
+
+---
+# Práctica 10 (Spring Boot): Paginación de Productos con Page, Slice y Pageable
+
+## 1. Respuesta con Page
+Petición `GET /api/products/page?page=0&size=5`, evidenciando `content`, `totalElements`, `totalPages`, `number`, `size`, `first` y `last`.
+![GET products page](images/practica10/01-get-products-page.png)
+
+## 2. Respuesta con Slice
+Petición `GET /api/products/slice?page=0&size=5`, evidenciando que no aparecen `totalElements` ni `totalPages`.
+![GET products slice](images/practica10/02-get-products-slice.png)
+
+## 3. Error por paginación inválida
+Petición `GET /api/products/page?page=-1&size=0`, respondiendo `400 Bad Request` con el formato estándar de `ErrorResponse` (incluye `details` con los errores de `page` y `size`).
+![GET products page inválido - 400](images/practica10/03-get-products-page-400.png)
+
+## 4. Endpoint de categoría paginado con Page
+Petición `GET /api/categories/2/products/page?page=0&size=5`, evidenciando productos filtrados por categoría, paginación aplicada y metadatos de `Page`.
+> **Nota:** el ejemplo original usa `page=110`, pero con pocos productos de prueba esa página estará vacía (`content: []`); usa `page=0` para ver resultados.
+![GET categoría products page](images/practica10/04-get-category-products-page.png)
+
+## 5. Endpoint de categoría paginado con Slice
+Petición `GET /api/categories/2/products/slice?page=0&size=5`, evidenciando productos filtrados por categoría, paginación aplicada y metadatos de `Slice`.
+> **Nota:** igual que arriba, usa `page=0` en vez de `page=10` si tu categoría tiene pocos productos, para que la captura muestre contenido real.
+![GET categoría products slice](images/practica10/05-get-category-products-slice.png)
+
+## 6. Explicación breve
+### ¿Cuál es la diferencia entre Page y Slice? 
+Page sabe el total de elementos y páginas (ejecuta un count extra), útil para mostrar "página 3 de 20". Slice solo sabe si hay página siguiente, sin contar el total; es más ligero e ideal para scroll infinito o "cargar más".
+
+### ¿Por qué la paginación debe aplicarse en el repositorio y no después de traer todos los datos en memoria?
+Porque paginar en el repositorio usa LIMIT/OFFSET para traer solo las filas necesarias. Traer todo a memoria y recortar después desperdicia tiempo, red y memoria, y se vuelve inviable cuando la tabla crece.
+
+---
+# Práctica 11 (Spring Boot): Autenticación JWT, Autorización por Roles y Protección de Endpoints
+
+## 1. Captura de registro exitoso
+![POST register exitoso](images/practica11/01-post-register.png)
+
+## 2. Captura de login exitoso
+![POST login exitoso](images/practica11/02-post-login.png)
+
+## 3. Captura de endpoint protegido sin token
+![GET /api/products/page?page=0&size=5](images/practica11/03-get-sin-token.png)
+
+## 4. Captura de endpoint protegido con token
+![GET /api/products/page?page=0&size=5](images/practica11/04-get-con-token.png)
+---
+# Práctica 12 (Spring Boot): Protección de Endpoints con Roles
+
+## 1. Captura de usuario autenticado
+Endpoint `GET /api/users/me` consumido con el token de un usuario logueado, mostrando id, name, email y roles.
+![GET users me](images/practica12/01-get-users-me.png)
+
+## 2. Captura de acceso denegado por rol
+Endpoint `GET /api/products` consumido con un token `ROLE_USER`, respondiendo 403 Forbidden.
+![GET products con ROLE_USER - 403](images/practica12/02-get-products-403.png)
+
+## 3. Captura de acceso permitido por rol ADMIN
+Endpoint `GET /api/products` consumido con un token `ROLE_ADMIN`, respondiendo 200 OK.
+![GET products con ROLE_ADMIN - 200](images/practica12/03-get-products-200.png)
+
+## 4. Explicación breve
+
+### ¿Cuál es la diferencia entre autenticación y autorización?
+La autenticación confirma quién es el usuario (token JWT válido). La autorización confirma qué puede hacer ese usuario ya autenticado, según el rol que tenga asignado.
+
+### ¿Por qué GET /api/products debe ser solo para ADMIN, mientras GET /api/products/page puede ser consumido por cualquier usuario autenticado?
+Porque `/products` devuelve todos los productos sin paginación, lo que puede exponer grandes volúmenes de datos y afectar el rendimiento. `/products/page` limita los resultados con Pageable, por lo que es seguro dejarlo disponible para cualquier usuario autenticado.
+
+---
+# Práctica 13 (Spring Boot): Validación de Propiedad de Recursos
+
+## 1. Captura de creación de producto con usuario autenticado
+Endpoint `POST /api/products`, sin enviar `userId` en el body. El owner del producto creado corresponde al usuario del token.
+![POST products - owner desde el token](images/practica13/01-post-products-owner.png)
+
+## 2. Captura de bloqueo por producto ajeno
+Endpoint `PUT /api/products/{id}` usando el token de un usuario distinto al dueño.
+![PUT products ajeno - 403](images/practica13/02-put-products-403.png)
+
+## 3. Captura de eliminación de producto ajeno bloqueada
+Endpoint `DELETE /api/products/{id}` usando el token de un usuario distinto al dueño.
+![DELETE products ajeno - 403](images/practica13/03-delete-products-403.png)
+
+## 4. Captura de ADMIN modificando producto ajeno
+Endpoint `PUT /api/products/{id}` usando un token `ROLE_ADMIN`, sobre un producto que no le pertenece.
+![PUT products ADMIN - 200](images/practica13/04-put-products-admin-200.png)
+
+## 5. Explicación breve
+
+### ¿Qué es ownership?
+Es que un recurso tiene un dueño (en este caso, el usuario que creó el producto) y solo ese dueño, o un usuario con permisos especiales como ADMIN, puede modificarlo o eliminarlo. Tener token válido ya no es suficiente: también hay que ser el propietario del recurso o tener un rol que lo permita.
+
+### ¿Por qué no es seguro recibir userId en CreateProductDto?
+Porque si el `userId` viene en el body, cualquier usuario autenticado podría enviar el id de otra persona y crear productos a su nombre. Por eso el owner se obtiene del usuario autenticado (`@AuthenticationPrincipal`), no de lo que envía el cliente.
+
+### ¿Cuál es la diferencia entre autorización por rol y autorización por ownership?
+La autorización por rol valida qué puede hacer un usuario según el rol que tiene (`ROLE_ADMIN`, `ROLE_USER`), sin importar de quién sea el recurso; se resuelve con `@PreAuthorize` antes de llegar al método. La autorización por ownership valida si el usuario es el dueño del recurso específico que quiere modificar, y por eso se resuelve dentro del servicio, después de consultar el recurso en base de datos.

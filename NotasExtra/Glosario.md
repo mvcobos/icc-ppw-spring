@@ -5,6 +5,10 @@ DTO = "Data Transfer Object". Es lo que viaja entre el cliente (Postman) y el AP
 *PASO 12.2: Modelo de dominio Product*  
 **¿Qué es un modelo de dominio?**  
 Es la clase que representa al producto dentro de tu aplicación. NO es lo que llega del cliente (DTO) ni lo que se guarda en BD (Entity), es el "producto puro" con su lógica propia.
+s
+---
+
+**Token**
 
 ---
 ## Tabla resumen de conceptos

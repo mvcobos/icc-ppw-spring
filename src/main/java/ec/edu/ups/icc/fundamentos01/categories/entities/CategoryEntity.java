@@ -1,8 +1,14 @@
 package ec.edu.ups.icc.fundamentos01.categories.entities;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import ec.edu.ups.icc.fundamentos01.core.entities.BaseEntity;
+import ec.edu.ups.icc.fundamentos01.products.entities.ProductEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 /*
@@ -21,6 +27,15 @@ public class CategoryEntity extends BaseEntity {
 
     @Column(length = 500)
     private String description;
+
+    /*
+    * Relación inversa con productos.
+    *
+    * mappedBy indica que la relación principal se define
+    * en el atributo categories de ProductEntity.
+    */
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    private Set<ProductEntity> products = new HashSet<>();
 
     // Constructor vacío
     public CategoryEntity() {

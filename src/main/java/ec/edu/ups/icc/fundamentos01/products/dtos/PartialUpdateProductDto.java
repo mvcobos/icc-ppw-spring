@@ -2,6 +2,7 @@ package ec.edu.ups.icc.fundamentos01.products.dtos;
 
 import java.util.Set;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -10,14 +11,27 @@ import jakarta.validation.constraints.Size;
  * DTO utilizado para recibir los datos que se desean
  * actualizar parcialmente en un producto existente (PATCH).
  */
+@Schema(description = "Datos para actualización parcial de un producto")
 public class PartialUpdateProductDto {
 
+    @Schema(
+            description = "Nombre del producto",
+            example = "Camiseta de algodón"
+    )
     @Size(min = 3, max = 150, message = "El nombre debe tener entre 3 y 150 caracteres")
     private String name;
 
+    @Schema(
+            description = "Precio del producto",
+            example = "19.99"
+    )
     @DecimalMin(value = "0.0", inclusive = true, message = "El precio no puede ser negativo")
     private Double price;
 
+    @Schema(
+            description = "Cantidad en stock del producto",
+            example = "50"
+    )
     @Min(value = 0, message = "El stock no puede ser negativo")
     private Integer stock;
 

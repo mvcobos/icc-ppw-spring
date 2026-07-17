@@ -21,23 +21,22 @@ public class AuthResponseDto {
 
     private Set<String> roles;
 
+    private String refreshToken;
+
     // Constructor vacío
     public AuthResponseDto() {
     }
 
     // Constructor lleno
-    public AuthResponseDto(
-            String token,
-            Long userId,
-            String name,
-            String email,
-            Set<String> roles
-    ) {
+    public AuthResponseDto(String token, String type, Long userId, String name, String email, Set<String> roles,
+            String refreshToken) {
         this.token = token;
+        this.type = type;
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.roles = roles;
+        this.refreshToken = refreshToken;
     }
 
     // Getters y setters
@@ -87,5 +86,13 @@ public class AuthResponseDto {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
-    }    
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }  
 }

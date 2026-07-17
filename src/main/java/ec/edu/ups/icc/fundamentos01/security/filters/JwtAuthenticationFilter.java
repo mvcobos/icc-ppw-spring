@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             /**
              * PASO 2: Validar y autenticar SOLO si hay token
              */
-            if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
+            if (StringUtils.hasText(jwt) && jwtUtil.validateAccessToken(jwt)) {
 
                 /**
                  * PASO 3: Extraer email del token

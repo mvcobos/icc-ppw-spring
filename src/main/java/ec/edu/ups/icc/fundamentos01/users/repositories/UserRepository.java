@@ -30,8 +30,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     // ============== NUEVOS MÉTODOS PARA SEGURIDAD ==============
     
     // Buscar usuario por email (usado en login)
-    Optional<UserEntity> findByEmailAndDeletedFalse(String email);
-    
+    Optional<UserEntity> findByEmailAndIsDeletedFalse(String email);
+
     // Verificar si email ya está registrado (usado en registro)
     boolean existsByEmail(String email);
 }

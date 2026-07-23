@@ -47,7 +47,7 @@ public class CategoriesController {
     }
 
     @GetMapping("/{id}")
-    public CategoryResponseDto findOne(@PathVariable Long id) {
+    public CategoryResponseDto findOne(@PathVariable("id") Long id) {
         return service.findOne(id);
     }
 
@@ -60,7 +60,7 @@ public class CategoriesController {
      */
     @GetMapping("/{id}/products")
     public List<ProductResponseDto> findProductsByCategory(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @ModelAttribute ProductFilterByCategoryDto filters
     ) {
         return productService.findByCategoryIdWithFilters(id, filters);
@@ -75,7 +75,7 @@ public class CategoriesController {
      */
     @GetMapping("/{id}/products/page")
     public Page<ProductResponseDto> findProductsByCategoryPage(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @ModelAttribute ProductFilterByCategoryDto filters,
             @Valid @ModelAttribute PaginationDto pagination
     ) {
@@ -90,7 +90,7 @@ public class CategoriesController {
      */
     @GetMapping("/{id}/products/slice")
     public Slice<ProductResponseDto> findProductsByCategorySlice(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @ModelAttribute ProductFilterByCategoryDto filters,
             @Valid @ModelAttribute PaginationDto pagination
     ) {
@@ -105,14 +105,14 @@ public class CategoriesController {
 
     @PutMapping("/{id}")
     public CategoryResponseDto update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody UpdateCategoryDto dto) {
         return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         service.delete(id);
     }
 }

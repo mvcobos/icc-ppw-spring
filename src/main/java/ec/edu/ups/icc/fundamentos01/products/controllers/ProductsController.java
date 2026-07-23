@@ -254,7 +254,7 @@ public class ProductsController {
     })
     @PutMapping("/{id}")
     public Object update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody UpdateProductDto dto,
             @AuthenticationPrincipal UserDetailsImpl currentUser
     ) {

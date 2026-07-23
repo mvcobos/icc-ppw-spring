@@ -67,7 +67,7 @@ public class UsersController {
      * GET /users/{id}
      */
     @GetMapping("/{id}")
-    public Object findOne(@PathVariable Long id) {
+    public Object findOne(@PathVariable("id") Long id) {
         try {
             return service.findOne(id);
         } catch (IllegalStateException e) {
@@ -104,7 +104,7 @@ public class UsersController {
      */
     @PutMapping("/{id}")
     public Object update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody UpdateUserDto dto
     ) {
         try {
@@ -125,7 +125,7 @@ public class UsersController {
      */
     @PatchMapping("/{id}")
     public Object partialUpdate(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody PartialUpdateUserDto dto
     ) {
         try {
@@ -144,7 +144,7 @@ public class UsersController {
      * DELETE /users/{id}
      */
     @DeleteMapping("/{id}")
-    public Object delete(@PathVariable Long id) {
+    public Object delete(@PathVariable("id") Long id) {
         try {
             service.delete(id);
             return new Object() {

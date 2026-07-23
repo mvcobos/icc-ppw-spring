@@ -375,3 +375,105 @@ Porque si el `userId` viene en el body, cualquier usuario autenticado podría en
 
 ### ¿Cuál es la diferencia entre autorización por rol y autorización por ownership?
 La autorización por rol valida qué puede hacer un usuario según el rol que tiene (`ROLE_ADMIN`, `ROLE_USER`), sin importar de quién sea el recurso; se resuelve con `@PreAuthorize` antes de llegar al método. La autorización por ownership valida si el usuario es el dueño del recurso específico que quiere modificar, y por eso se resuelve dentro del servicio, después de consultar el recurso en base de datos.
+
+---
+# Práctica 14 (Spring Boot): Renovación de Access Token con Refresh Token
+
+## 1. Captura de login con refresh token
+Endpoint `POST /api/auth/login`, evidenciando `token`, `refreshToken` y `roles` en la respuesta.
+![POST login con refresh token](images/practica14/01-post-login-refresh.png)
+
+## 2. Captura de endpoint protegido usando el refresh token como access token
+Endpoint `GET /api/products/page?page=0&size=5` enviando el `refreshToken` (no el `token`) en `Authorization: Bearer`, respondiendo `401 Unauthorized` porque el filtro solo acepta access tokens.
+![GET products con refresh token - 401](images/practica14/02-get-refresh-token-401.png)
+
+## 3. Captura de refresh exitoso
+Endpoint `POST /api/auth/refresh` enviando el `refreshToken` en el body, evidenciando `200 OK` con un nuevo `token` y `refreshToken`.
+![POST refresh exitoso](images/practica14/03-post-refresh-200.png)
+
+## 4. Captura de reutilización de un refresh token ya rotado
+Endpoint `POST /api/auth/refresh` reenviando el `refreshToken` anterior (ya revocado por la rotación del paso 3), respondiendo `400 Bad Request`.
+![POST refresh token revocado - 400](images/practica14/04-post-refresh-revocado-400.png)
+
+## 5. Captura de logout
+Endpoint `POST /api/auth/logout` enviando el `refreshToken` vigente, evidenciando `204 No Content`.
+![POST logout - 204](images/practica14/05-post-logout-204.png)
+
+## 6. Captura de refresh después de logout
+Endpoint `POST /api/auth/refresh` usando el mismo `refreshToken` revocado por el logout del paso 5, respondiendo `400 Bad Request`.
+![POST refresh después de logout - 400](images/practica14/06-post-refresh-post-logout-400.png)
+
+## 7. Explicación breve
+
+### ¿Cuál es la diferencia entre access token y refresh token?
+El access token se usa para consumir endpoints protegidos (`Authorization: Bearer <token>`) y dura poco (30 minutos en este proyecto). El refresh token solo se usa para renovar tokens en `/auth/refresh`, viaja en el body (no en el header) y dura más tiempo (7 días), porque se guarda en base de datos y puede revocarse.
+
+### ¿Por qué el refresh token no debe usarse en Authorization: Bearer?
+Porque el refresh token no está pensado para autorizar peticiones a endpoints de negocio, solo para renovar sesión. Por eso cada JWT lleva un claim `type` (`access` o `refresh`), y `JwtAuthenticationFilter` solo acepta tokens con `jwtUtil.validateAccessToken(jwt)`; si se envía un refresh token como Bearer, la validación falla y responde 401.
+
+### ¿Qué significa rotar un refresh token?
+Significa que cada vez que un refresh token se usa en `/auth/refresh`, ese token se revoca (`revoked = true`) y se genera uno nuevo. Así el mismo refresh token nunca puede reutilizarse dos veces: si alguien lo intercepta y lo reutiliza después de que el dueño ya lo usó, el servidor lo rechaza porque ya está revocado.
+
+---
+# Práctica 15 (Spring Boot): Documentación de Endpoints con Swagger, OpenAPI y Seguridad JWT
+
+## 1. Swagger UI bloqueado por Spring Security
+Acceso a `http://localhost:8080/api/swagger-ui/index.html` antes de permitir la ruta en `SecurityConfig`, respondiendo error de autenticación en vez de la interfaz.
+![Swagger UI bloqueado](images/practica15/01-swagger-bloqueado.png)
+
+## 2. Swagger UI funcionando
+Con `/swagger-ui/**` y `/v3/api-docs/**` en `permitAll()`, Swagger UI carga correctamente y lista los controladores documentados (Autenticación, Productos, etc.).
+![Swagger UI funcionando](images/practica15/02-swagger-funcionando.png)
+
+## 3. Botón Authorize con JWT
+Login desde Swagger UI, copiando el `token` de la respuesta y pegándolo en el botón `Authorize` con el prefijo `Bearer`.
+![Swagger Authorize con JWT](images/practica15/03-swagger-authorize.png)
+
+## 4. Endpoint protegido documentado y probado desde Swagger
+Endpoint `GET /products/page` mostrando el candado de seguridad (`@SecurityRequirement`) y una respuesta `200 OK` al ejecutarlo ya autorizado.
+![GET products/page desde Swagger - 200](images/practica15/04-swagger-products-page-200.png)
+
+## 5. Explicación breve
+
+### ¿Cuál es la diferencia entre OpenAPI y Swagger UI?
+OpenAPI es la especificación que describe la API en JSON/YAML (rutas, métodos, parámetros, respuestas, seguridad). Swagger UI es la interfaz visual que lee esa especificación y permite explorarla y probarla desde el navegador.
+
+### ¿Por qué no se debe colocar @SecurityRequirement en todo el AuthController?
+Porque `login` y `register` son endpoints públicos que no requieren token; si se coloca `@SecurityRequirement` a nivel de clase, Swagger pediría un JWT también para esos endpoints, lo cual no refleja la seguridad real configurada en `SecurityConfig`.
+
+### ¿Para qué sirve el botón Authorize en Swagger UI?
+Permite registrar un token JWT una sola vez para que Swagger lo adjunte automáticamente como header `Authorization: Bearer <token>` en cada endpoint protegido con `@SecurityRequirement`, sin tener que copiarlo manualmente en cada prueba.
+
+---
+# Práctica 16 (Spring Boot): Despliegue portable con Docker y Nginx en Ubuntu Server
+
+## 1. Contenedores en ejecución en Ubuntu Server
+Salida de `docker ps` en el Ubuntu Server mostrando los contenedores `fundamentos-api` y `nginx` corriendo, con el estado `healthy` del health check.
+![docker ps - contenedores en ejecución](images/practica16/01-docker-ps.png)
+
+## 2. Health check desde Ubuntu Server
+Respuesta de `curl http://localhost/api/actuator/health` ejecutado dentro del Ubuntu Server, pasando por Nginx hacia Spring Boot.
+![curl health desde Ubuntu Server](images/practica16/02-curl-health-ubuntu.png)
+
+## 3. Health check desde la máquina anfitriona
+Respuesta de `curl http://192.168.56.2/api/actuator/health` ejecutado desde la HOST, confirmando que Nginx expone la API a través de la red Host-Only.
+![curl health desde la HOST](images/practica16/03-curl-health-host.png)
+
+## 4. Conexión a PostgreSQL externo
+El contenedor `fundamentos-api` no incluye base de datos propia: se conecta a un PostgreSQL externo mediante `DATABASE_URL`, entregado en `.env.ubuntu` y leído por `application-prod.yml`.
+
+Ruta principal (PostgreSQL en la HOST, alcanzado por la red Host-Only de VirtualBox):
+```dotenv
+DATABASE_URL=jdbc:postgresql://192.168.56.1:5432/devdb
+```
+Esto requirió habilitar `listen_addresses` en `postgresql.conf` para la interfaz `192.168.56.1` y agregar una regla en `pg_hba.conf` para la red `192.168.56.0/24`.
+
+Alternativa de contingencia (si configurar el PostgreSQL de la HOST no es viable): levantar un contenedor `postgres:17-alpine` en la misma red `app-network` del Ubuntu Server y apuntar `DATABASE_URL` al nombre del contenedor (`postgres`), resuelto por el DNS interno de Docker:
+```dotenv
+DATABASE_URL=jdbc:postgresql://postgres:5432/devdb
+```
+En ambos casos la imagen `fundamentos-api` no cambia: solo cambia el valor de `DATABASE_URL` entregado en `--env-file`, lo que demuestra que la imagen es portable entre ambientes.
+
+## 5. Login desde la máquina anfitriona
+Petición `POST http://192.168.56.2/api/auth/login` ejecutada con Bruno o Postman desde la HOST, atravesando Nginx y llegando hasta Spring Boot.
+![POST login desde la HOST vía Nginx](images/practica16/05-post-login-host.png)

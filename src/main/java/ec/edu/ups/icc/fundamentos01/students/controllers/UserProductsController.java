@@ -47,7 +47,7 @@ public class UserProductsController {
      */
     @GetMapping("/{id}/products")
     public List<ProductResponseDto> findProductsByUser(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @ModelAttribute ProductFilterByUserDto filters
     ) {
         return productService.findByUserIdWithFilters(id, filters);
